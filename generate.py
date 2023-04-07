@@ -71,6 +71,7 @@ def updateP(date, outgoing, incoming, cal, dict):
     cal.list()[date-1][2] = incoming
     dict[outgoing]['points'] -= cal.list()[date-1][1]
     dict[incoming]['points'] += cal.list()[date-1][1]
+    print(f"Swapped {outgoing} with {incoming} on {date}")
 
 
 def viable(date, unavailIncoming, incoming, cal):
@@ -78,23 +79,24 @@ def viable(date, unavailIncoming, incoming, cal):
     if date in unavailIncoming:
         return False
     
-    try: 
-        if incoming == cal[date-2][2]:
+    if date < 1:
+        if incoming == cal.list()[date][2]:
             return False
-    except: 
-        pass
-
-    try: 
-        if incoming == cal[date][2]:
+        
+    elif date >= len(cal.list()): 
+        if incoming == cal.list()[date-2][2]:
             return False
-    except: 
-        pass
+    
+    else:
+        if incoming == cal.list()[date-2][2]:
+            return False
+        if incoming == cal.list()[date][2]:
+            return False
 
     return True
     
 
 def recalibrate(cal, points, dict):
-    
     outgoing = points[-1][0] # More points
     dutyOutgoing = duties(outgoing, cal)
 
