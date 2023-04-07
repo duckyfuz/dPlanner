@@ -6,11 +6,32 @@ from io import StringIO
 from dPlanner import *
 
 
-def checkConsis(calendar, people):
+def replace(pax, date, people, dict, cal):
+    people.remove(pax)
+    random.shuffle(people)
+    people.append(pax)
+    
+    for pers in people:
+        if date not in dict[pers]['unavail']:
+            cal.list()[date-1][2] = pers
+            print(cal.list()[date-1])
+            
+            break
+        elif pax == pers:
+            print(f"Error: There is nobody free on {date}")
+            sys.exit()
+
+    print(f"DOO on {date}, {pax}, was replaced with {pers}")
+
+
+def checkConsis(cal, dict, people):
     # Check that there is somebody on duty everyday (?)
     # Check that nobody does 2 consecutive duties
     # Check that nobody is doing duty on an unavail day
-    pass
+    for pax in dict:
+        for date in dict[pax]['unavail']:
+            if pax == cal.list()[date-1][2]:
+                replace(pax, date, people, dict, cal)
     # Check that people with extras are doing them on a weekend/public holiday
 
 
@@ -62,7 +83,7 @@ def main():
 
     fill(calendar, people)
 
-    checkConsis(calendar, people)
+    checkConsis(calendar, dict, people)
     
     updateD(dict, calendar)
 
