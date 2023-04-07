@@ -14,14 +14,10 @@ def replace(pax, date, people, dict, cal):
     for pers in people:
         if date not in dict[pers]['unavail']:
             cal.list()[date-1][2] = pers
-            print(cal.list()[date-1])
-            
             break
         elif pax == pers:
             print(f"Error: There is nobody free on {date}")
             sys.exit()
-
-    print(f"DOO on {date}, {pax}, was replaced with {pers}")
 
 
 def checkConsis(cal, dict, people):
@@ -51,6 +47,68 @@ def fill(cal, people):
 def updateD(dict, cal):
     for day in cal.list():
         dict[day[2]]['points'] += day[1]
+
+
+def calcPoints(dict):
+    """Based on the values in dict, calcPoints creates a new dictionary sorted by points (ascending)"""
+    points = {}
+    for pers in dict:
+        points[pers] = float(dict[pers]['points'])
+    
+    points = sorted(points.items(), key=lambda item: item[1])
+    return points
+
+
+def duties(outgoing, cal):
+    duties = []
+    for day in cal.list():
+        if day[2] == outgoing:
+            duties.append(day[0])
+    return duties
+
+
+def updateP(date, outgoing, incoming, cal, dict):
+    cal.list()[date-1][2] = incoming
+    dict[outgoing]['points'] -= cal.list()[date-1][1]
+    dict[incoming]['points'] += cal.list()[date-1][1]
+
+
+def viable(date, unavailIncoming, incoming, cal):
+    """Based on cal, check if incoming is doing duty on the day before/after date, and if incoming is unavail"""
+    if date in unavailIncoming:
+        return False
+    
+    try: 
+        if incoming == cal[date-2][2]:
+            return False
+    except: 
+        pass
+
+    try: 
+        if incoming == cal[date][2]:
+            return False
+    except: 
+        pass
+
+    return True
+    
+
+def recalibrate(cal, points, dict):
+    
+    outgoing = points[-1][0] # More points
+    dutyOutgoing = duties(outgoing, cal)
+
+    for i in points:
+        incoming = i[0] # Less points
+        unavailIncoming = dict[incoming]['unavail']
+
+        for date in dutyOutgoing:
+            if viable(date, unavailIncoming, incoming, cal) == True:
+                updateP(date, outgoing, incoming, cal, dict)
+                return
+        
+        if i == points[-1]:
+            print('PLEASEEEEE DONT HAPPENNNNN :(((')
     
 
 def main():
@@ -87,8 +145,14 @@ def main():
     
     updateD(dict, calendar)
 
+    points = calcPoints(dict)
+
+    while points[-1][1] - points[0][1] > 1.5:
+        recalibrate(calendar, points, dict)
+        points = calcPoints(dict)
+        
     print(calendar)
-    print(dict)
+    print(points)
 
 
 if __name__ == "__main__":
