@@ -1,4 +1,4 @@
 ## Pending Issues:
 
-1. Swaps between two people have a chance of looping should the stars align
-2. Add feature - extra duties
+1. Add feature - take extra duties into account
+2. CSV implementation
