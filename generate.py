@@ -99,6 +99,7 @@ def viable(date, unavailIncoming, incoming, cal):
 def recalibrate(cal, points, dict):
     outgoing = points[-1][0] # More points
     dutyOutgoing = duties(outgoing, cal)
+    random.shuffle(dutyOutgoing)
 
     for i in points:
         incoming = i[0] # Less points
