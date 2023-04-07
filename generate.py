@@ -1,27 +1,53 @@
 import sys
 import copy
+import random
+from io import StringIO
 
 from dPlanner import *
 
 
-def checkConsis():
-    pass
+def checkConsis(calendar, people):
     # Check that there is somebody on duty everyday (?)
     # Check that nobody does 2 consecutive duties
     # Check that nobody is doing duty on an unavail day
+    pass
     # Check that people with extras are doing them on a weekend/public holiday
 
 
-def fill(cal):
+def fill(cal, people):
+    prev = 0
+    for x in range(len(cal.cal)):
+        if x == 0:
+            possibleRange = list(range(0,len(people)))
+            prev = random.choice(possibleRange)
+            cal.update(x+1,people[prev])
+        possibleRange = list(range(0,len(people)))
+        possibleRange.remove(prev)
+        prev = random.choice(possibleRange)
+        cal.update(x+1,people[prev])
 
+
+def updateD(dict, cal):
+    for day in cal.list():
+        dict[day[2]]['points'] += day[1]
     
 
 def main():
 
     # TEMPORARY -> SWITCH TO READING CSV FILE IN data/
-    people = ["Josh", "Jay"]
-    Josh = Person("Josh",[1,2],5)
-    Jay = Person("Jay",[4,5],3)
+    people = ["Josh", "Jay", "Jack", "Ken", "Korno", "Krel", "Abba", "Aby", "Andy"]
+    random.shuffle(people)
+    dict = {"Josh": {"unavail": [1,2], "points": 5},
+            "Jay": {"unavail": [3,4], "points": 4},
+            "Jack": {"unavail": [5,6], "points": 2},
+            "Ken": {"unavail": [7], "points": 1},
+            "Korno": {"unavail": [10,11,12,14], "points": 5},
+            "Krel": {"unavail": [15,16], "points": 6},
+            "Abba": {"unavail": [17], "points": 6},
+            "Aby": {"unavail": [18,19,20,21,22], "points": 3}, 
+            "Andy": {"unavail": [23,24,25,26,27,28], "points": 2}
+    }
+
 
     # Check proper format
     if len(sys.argv) not in [3, 4]:
@@ -34,9 +60,14 @@ def main():
 
     calendar = calendarPers(yy,mm)
 
-    calandar = fill(calendar)
+    fill(calendar, people)
+
+    checkConsis(calendar, people)
+    
+    updateD(dict, calendar)
 
     print(calendar)
+    print(dict)
 
 
 if __name__ == "__main__":
