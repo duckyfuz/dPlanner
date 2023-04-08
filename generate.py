@@ -2,6 +2,8 @@ import sys
 import csv
 import random
 import os
+import threading
+from time import sleep
 from io import StringIO
 
 from dPlanner import *
@@ -9,7 +11,7 @@ from dPlanner import *
 # The LOWER the value of MAXDIFF, the more likely it is for a loop to occur (but it ensures a fairer outcome).
 MAXDIFF = 0.5
 
-
+    
 def loadData(filename):
     """
     Takes filename as input, returns people[] and dict{}
@@ -151,51 +153,98 @@ def calcPoints(dict):
 
 
 def recalibrate(cal, points, dict):
-    outgoing = points[-1][0] # More points
+    """
+    Selects the person with the most points, choose a random duty, gives it to the person with the least points. Choose another date if the person is unavail on the first date.
+    """
+
+    # Outgoing is the person with the most points
+    outgoing = points[-1][0]
+
+    # Call the function duties() to create a list of the duties schedued for the aforementioned person
     dutyOutgoing = duties(outgoing, cal)
+
+    # Shuffle the duties to add an element of randomness
     random.shuffle(dutyOutgoing)
 
+    # Iterate through everybody, starting with the person with the least points
     for i in points:
-        incoming = i[0] # Less points
+
+        # Choose somebody with low points
+        incoming = i[0]
+
+        # Create a list of the dates the incoming person is unavail on
         unavailIncoming = dict[incoming]['unavail']
 
+        # Iterate through all the dates the outgoing is schedued for
         for date in dutyOutgoing:
+
+            # If incoming is availible, update the cal
             if viable(date, unavailIncoming, incoming, cal) == True:
+
+                # Calls on updateP() to swap outgoing with incoming on the date, then return
                 updateP(date, outgoing, incoming, cal, dict)
+
                 return
         
+        # If nobody is able to do the duty on ALL dates that incoming is schedued for, return an error message
         if i == points[-1]:
-            print('PLEASEEEEE DONT HAPPENNNNN :(((')
+            sys.exit("don't liddis leh :(")
 
 
 def duties(outgoing, cal):
+    """
+    Create a list consisting of the dates that the specified person is schedued for
+    """
+
+    # Initiate duties[]
     duties = []
+
+    # Iterate over each day in cal
     for day in cal.list():
+
+        # If the specified person is schedued on that day, add it to the list
         if day[2] == outgoing:
             duties.append(day[0])
+
     return duties
 
 
 def updateP(date, outgoing, incoming, cal, dict):
+
+    """
+    Swap outgoing with incoming on the specified date, then update dict{} with the new points. 
+    POINTS{} IS NOT UPDATED. CALL ON calcPoints() after this function to update points{}.
+    """
+
+    # Schedue duty on the specified date for the incoming
     cal.list()[date-1][2] = incoming
+
+    # Subtract points from outgoing and add points to incoming
     dict[outgoing]['points'] -= cal.list()[date-1][1]
     dict[incoming]['points'] += cal.list()[date-1][1]
+
+    # Print an update message
     print(f"Swapped {outgoing} with {incoming} on {date}")
 
 
 def viable(date, unavailIncoming, incoming, cal):
-    """Based on cal, check if incoming is doing duty on the day before/after date, and if incoming is unavail"""
+    """
+    Based on cal, check if incoming is doing duty on the day before/after date, and if incoming is unavail
+    """
+
+    # Check if incoming is unavail on the date
     if date in unavailIncoming:
         return False
     
+    # If the date is the first or last day of the month, only need to check one adjacent date (after or before respectively)
     if date < 1:
         if incoming == cal.list()[date][2]:
             return False
-        
     elif date >= len(cal.list()): 
         if incoming == cal.list()[date-2][2]:
             return False
     
+    # For any other date, check both adjacent days (before and after)
     else:
         if incoming == cal.list()[date-2][2]:
             return False
@@ -203,8 +252,8 @@ def viable(date, unavailIncoming, incoming, cal):
             return False
 
     return True
-
-
+        
+    
 def main():
 
     # Check proper format
@@ -231,17 +280,24 @@ def main():
     updateD(dict, calendar)
     points = calcPoints(dict)
 
+    # Initiate counter
+    counter = 0
     # While the maximum diference in points exceeds MAXDIFF, swap duties with the function recalibrate()
     while points[-1][1] - points[0][1] > MAXDIFF:
         
         # Person with the most points gives a random duty to the person with the least points
         recalibrate(calendar, points, dict)
 
-        # Update points to reflect changes
+        # Update points and counter to reflect changes
         points = calcPoints(dict)
+        counter += 1
+
+        if counter >= 20:
+            main()
         
     print(calendar)
     print(points)
+    sys.exit()
 
 
 if __name__ == "__main__":
