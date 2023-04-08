@@ -291,6 +291,7 @@ def main():
 
         # If recalibrate() is called 20 times, restart main() as it is PROBABLY looping
         if counter >= 20:
+            print("Failed, trying again...")
             main()
 
     # Create new format for points
@@ -311,6 +312,7 @@ def main():
         # Write introductory lines
         writer.writerow(["Hello " + "all", ""])
         writer.writerow(["These are the duties for the " + str(mm) + "th month of " + str(yy) + ":"])
+        writer.writerow([])
 
         # Iterate through each day and add a new line for each day
         for day in calendar.list():
