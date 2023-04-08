@@ -1,10 +1,13 @@
 import sys
-import copy
+import csv
 import random
+import os
 from io import StringIO
 
 from dPlanner import *
 
+# The LOWER the value of MAXDIFF, the more likely it is for a loop to occur (but it ensures a fairer outcome).
+MAXDIFF = 0.5
 
 def replace(pax, date, people, dict, cal):
     people.remove(pax)
@@ -114,31 +117,39 @@ def recalibrate(cal, points, dict):
             print('PLEASEEEEE DONT HAPPENNNNN :(((')
     
 
+def loadData(filename):
+    f = open(filename)
+    reader = csv.reader(f)
+    header = next(reader)
+    dict = {}
+    people = []
+    for row in reader:
+        people.append(row[0])
+
+        unavail = list(row[3].split("/"))
+        unavailInt = []
+        for str in unavail:
+            unavailInt.append(int(str))
+        
+        dict[row[0]] = {"unavail": unavailInt, "points": int(row[1])}
+
+    random.shuffle(people)
+    f.close()
+    return people, dict
+
+
 def main():
 
-    # TEMPORARY -> SWITCH TO READING CSV FILE IN data/
-    people = ["Josh", "Jay", "Jack", "Ken", "Korno", "Krel", "Abba", "Aby", "Andy"]
-    random.shuffle(people)
-    dict = {"Josh": {"unavail": [1,2], "points": 5},
-            "Jay": {"unavail": [3,4], "points": 4},
-            "Jack": {"unavail": [5,6], "points": 2},
-            "Ken": {"unavail": [7], "points": 1},
-            "Korno": {"unavail": [10,11,12,14], "points": 5},
-            "Krel": {"unavail": [15,16], "points": 6},
-            "Abba": {"unavail": [17], "points": 6},
-            "Aby": {"unavail": [18,19,20,21,22], "points": 3}, 
-            "Andy": {"unavail": [23,24,25,26,27,28], "points": 2}
-    }
-
-
     # Check proper format
-    if len(sys.argv) not in [3, 4]:
-        sys.exit("Usage: python generate.py year month [output]")
+    if len(sys.argv) not in [4, 5]:
+        sys.exit("Usage: python generate.py year month [input].csv [output].")
 
     # Parse command-line arguments
-    yy = int(sys.argv[1])
-    mm = int(sys.argv[2])
-    output = sys.argv[3] if len(sys.argv) == 4 else None
+    yy,mm = int(sys.argv[1]),int(sys.argv[2])
+
+    people, dict = loadData(sys.argv[3])
+
+    output = sys.argv[4] if len(sys.argv) == 5 else None
 
     calendar = calendarPers(yy,mm)
 
@@ -150,7 +161,7 @@ def main():
 
     points = calcPoints(dict)
 
-    while points[-1][1] - points[0][1] > 1.5:
+    while points[-1][1] - points[0][1] > MAXDIFF:
         recalibrate(calendar, points, dict)
         points = calcPoints(dict)
         
