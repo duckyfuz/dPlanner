@@ -37,7 +37,7 @@ def loadData(filename):
         # Convert unavail dates to list of integers (Empty list if there are no unavail dates)
         if row[3] == 'NULL':
             unavailInt = []
-            print(f"{row[0]} has no unavailable dates.")
+
         else:
 
             # Split row[3] into list values and convert the str values into int values
@@ -223,9 +223,6 @@ def updateP(date, outgoing, incoming, cal, dict):
     dict[outgoing]['points'] -= cal.list()[date-1][1]
     dict[incoming]['points'] += cal.list()[date-1][1]
 
-    # Print an update message
-    print(f"Swapped {outgoing} with {incoming} on {date}")
-
 
 def viable(date, unavailIncoming, incoming, cal):
     """
@@ -292,11 +289,33 @@ def main():
         points = calcPoints(dict)
         counter += 1
 
+        # If recalibrate() is called 20 times, restart main() as it is PROBABLY looping
         if counter >= 20:
             main()
-        
-    print(calendar)
-    print(points)
+
+    # Create new format for points
+    pointsP = []
+    for person in points:
+        pointsP.append(person[0] + ":" + str(person[1]))
+    
+    print(pointsP)
+
+    # If user did not specify an output, exit
+    if output == None:
+        sys.exit()
+
+    # Open a new file to write in
+    with open(output, 'w', newline='') as f:
+        writer = csv.writer(f)
+
+        # Write introductory lines
+        writer.writerow(["Hello " + "all", ""])
+        writer.writerow(["These are the duties for the " + str(mm) + "th month of " + str(yy) + ":"])
+
+        # Iterate through each day and add a new line for each day
+        for day in calendar.list():
+            writer.writerow([str(day[0]) + ". " + day[2]])
+
     sys.exit()
 
 
