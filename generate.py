@@ -297,7 +297,7 @@ def main():
     # Create new format for points
     pointsP = []
     for person in points:
-        pointsP.append(person[0] + ":" + str(person[1]))
+        pointsP.append(person[0] + ": " + str(person[1]) + "pts")
     
     print(pointsP)
 
