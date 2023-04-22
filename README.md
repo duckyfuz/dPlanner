@@ -1,6 +1,6 @@
 ## Pending Issues:
 
-1. Possibility of swapping duties with the same two people over and over again
+1. Some edge cases will stop the program entirely. Attempt to autonate a restart such that the user does not have to input their values again.
 
 ### Sample command: python3 generate.py 2023 5 data/may.csv data/output.csv
 
