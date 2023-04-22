@@ -9,7 +9,7 @@
 </p>
 
 ### Sample command: python3 generate.py 2023 5 data/may.csv data/output.csv
-### REMINDER: Add the first day of the month as an unavail date for the person who did duty on the last day of the previous month
+### REMINDER: The individual who did duty on the last day of the previous month is unavailable on the first day of the current month. Add this into the input CSV file.
 
 ## Background:
 This program was created to automate the process of creating a duty list, under the assumption that ONE person must be schedued for each day.
@@ -17,8 +17,8 @@ This program was created to automate the process of creating a duty list, under 
 ### Futher Assumptions:
 Doing duty rewards one with points, and the amount of points awarded depends on the type of day it is.
 #### As of now:
-Monday - Thurday: 1 point 
-Friday: 1.5 points
+Monday - Thurday: 1 point  
+Friday: 1.5 points  
 Saturday, Sunday: 2 points
 
 ### Features: 
