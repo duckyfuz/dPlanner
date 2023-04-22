@@ -1,4 +1,3 @@
-import calendar
 import sys
 import csv
 import random
@@ -8,71 +7,13 @@ import threading
 from time import sleep
 from io import StringIO
 
-
-class Person():
-
-    def __init__(self, name, unavail, points):
-        """Create a new person with name(str), unavail(list), points(int)"""
-        self.name = name
-        self.unavail = unavail
-        self.points = points
-
-        self.duties = []
-
-    def __hash__(self):
-        return hash(self.name, self.unavail, self.points)
-
-    def __eq__(self, other):
-        return (
-            (self.name == other.name) and
-            (self.unavail == other.unavail) and
-            (self.points == other.points)
-        )
-
-    def __str__(self):
-        return f"{self.name}{chr(10)}{self.unavail}{chr(10)}{self.points}"
-
-    def __repr__(self):
-        name = repr(self.name)
-        return f"Person({name}, {self.unavail}, {self.points})"
-
-
-class calendarPers():
-
-    def __init__(self, yy, mm):
-        """Create a list of lists(date,MTWT/Fri/Sat/Sun,person)"""
-        self.cal = []
-        for x in range(calendar.monthrange(yy,mm)[1]):
-
-            # Find out which day it is
-            MTWT = [0,1,2,3]
-            if int(calendar.weekday(yy,mm,x+1)) in MTWT:
-                day = 1
-            elif int(calendar.weekday(yy,mm,x+1)) == 4:
-                day = 1.5
-            elif int(calendar.weekday(yy,mm,x+1)) == 5:
-                day = 2
-            elif int(calendar.weekday(yy,mm,x+1)) == 6:
-                day = 2               
-
-            self.cal.append([x+1,day,None])
-
-    def __repr__(self): 
-        return f"{self.cal}"
-    
-    def list(self):
-        return self.cal
-
-    def update(self, date, pers):
-        """Given a date and a name, update the calendar to reflect as such"""
-        self.cal[date-1][2] = pers
-
+from classes import *
 
 def loadData(filename):
     """
     Takes filename as input, returns people[] and dict{}
     people[]: List of names (randomised)
-    dict{}: Dictionary that links names to another dictionary with keys "unavail", "points" and 'extras'
+    dict{}: Dictionary that links names to another dictionary with keys "unavail", "points", 'extras' and 'leftovers'
     """
     
     # Open filename, skip headers line
@@ -101,9 +42,16 @@ def loadData(filename):
             unavailInt = []
             for str in unavail:
                 unavailInt.append(int(str))
+
+        clear = 0
+        if int(row[2]) > 0:
+            clear = int(input(f"{row[0]} has {row[2]} extra(s). How many to clear this month? "))
         
         # Add clean values into dict{}
-        dict[row[0]] = {"unavail": unavailInt, "points": int(row[1]), "extras": int(row[2])}
+        dict[row[0]] = {"unavail": unavailInt, 
+                        "points": int(row[1]), 
+                        "extras": clear, 
+                        "leftovers": int(row[2]) - clear}
 
     # Shuffle people[] to ensure fairness
     random.shuffle(people)
@@ -113,30 +61,43 @@ def loadData(filename):
 
     return people, dict
 
-    
-def fill(cal, people):
+
+def fill(cal, people, dict, untouchable):
     """
     Takes cal and people as input, fill up cal with random people, ensuring that nobody is schedued for 2 consecuties duties.
     DOES NOT TAKE INTO ACCOUNT UNAVAIL DATES!!!
     """
 
-    # Initiate prev with unimportant value
-    prev = 0
+    # Create dict of people: extras
+    extras = {}
+    for person in dict:
+        if dict[person]['extras'] == 0:
+            continue
+        extras[person] = dict[person]['extras']
 
-    # Iterate over every single day of the month
-    for x in range(len(cal.cal)):
+    # Fill up extras
+    for person in extras:
+        for _ in range(extras[person]):
+            for day in cal.cal:
 
-        # For the first day, no need to take consecutive duties into account
-        if x == 0:
-            possibleRange = list(range(0,len(people)))
-            prev = random.choice(possibleRange)
-            cal.update(x+1,people[prev])
-        
-        # Randomly choose from all people, minus the one who is schedued for the previous day
-        possibleRange = list(range(0,len(people)))
-        possibleRange.remove(prev)
-        prev = random.choice(possibleRange)
-        cal.update(x+1,people[prev])
+                # Skip all dates that fall on a weekday
+                if day[1] != 2 or day[2] != None:
+                    continue
+
+                if cal.viable(day[0], dict[person]['unavail'], person, untouchable):
+                    day[2] = person
+                    untouchable.append(day[0])
+                    break
+
+    # Fill up the rest of the days
+    for day in cal.cal:
+        random.shuffle(people)
+        for incoming in people:
+            if not cal.viable(day[0], dict[incoming]['unavail'], incoming, untouchable):
+                continue
+            day[2] = incoming
+
+    return
 
 
 def checkConsis(cal, dict, people):
@@ -180,13 +141,15 @@ def replace(pax, date, people, dict, cal):
             sys.exit()
 
 
-def updateD(dict, cal):
+def updateD(dict, cal, untouchable):
     """
     Calculate the total points after doing the schedued duties.
     """
 
     # Iterate over each day, sum up the point for the schedued person
-    for day in cal.list():
+    for day in cal.cal:
+        if day[0] in untouchable:
+            continue
         dict[day[2]]['points'] += day[1]
 
 
@@ -208,7 +171,7 @@ def calcPoints(dict):
     return points
 
 
-def recalibrate(cal, points, dict):
+def recalibrate(cal, points, dict, untouchable):
     """
     Selects the person with the most points, choose a random duty, gives it to the person with the least points. Choose another date if the person is unavail on the first date.
     """
@@ -228,21 +191,18 @@ def recalibrate(cal, points, dict):
         # Choose somebody with low points
         incoming = i[0]
 
-        # Create a list of the dates the incoming person is unavail on
-        unavailIncoming = dict[incoming]['unavail']
-
         # Iterate through all the dates the outgoing is schedued for
         for date in dutyOutgoing:
 
             # If incoming is availible, update the cal
-            if viable(date, unavailIncoming, incoming, cal) == True:
+            if viable(date, dict[incoming]['unavail'], incoming, cal, untouchable) == True:
 
                 # Calls on updateP() to swap outgoing with incoming on the date, then return
                 updateP(date, outgoing, incoming, cal, dict)
 
                 return
         
-        # If nobody is able to do the duty on ALL dates that incoming is schedued for, return an error message
+        # If nobody is able to do the duty on ALL dates that the outgoing is schedued for, return an error message
         if i == points[-1]:
             sys.exit("don't liddis leh :(")
 
@@ -280,10 +240,14 @@ def updateP(date, outgoing, incoming, cal, dict):
     dict[incoming]['points'] += cal.list()[date-1][1]
 
 
-def viable(date, unavailIncoming, incoming, cal):
+def viable(date, unavailIncoming, incoming, cal, untouchable):
     """
     Based on cal, check if incoming is doing duty on the day before/after date, and if incoming is unavail
     """
+
+    # Check if the date is untouchable
+    if date in untouchable:
+        return False
 
     # Check if incoming is unavail on the date
     if date in unavailIncoming:
