@@ -2,13 +2,14 @@ from dPlanner import *
 from classes import *
 
 
+MAXDIFF = 0.5
+
+
 def main():
 
     # Check proper format
     if len(sys.argv) not in [4, 5]:
         sys.exit("Usage: python generate.py year month [input].csv [output].")
-
-    MAXDIFF = float(input("What's your MAXDIFF? "))
 
     # Parse command-line arguments
     yy,mm = int(sys.argv[1]),int(sys.argv[2])
@@ -49,7 +50,9 @@ def main():
 
             # If recalibrate() is called 20 times, restart loop as it is PROBABLY looping
             if counter >= 20:
-                sys.exit("Failed, please restart the program or increase MAXDIFF.")
+                print("Looping. Attempting to resolve...")
+                randomSwap(calendar, untouchable, people, dict)
+                counter = 0
 
         # Create new format for points
         pointsP = []

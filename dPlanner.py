@@ -2,7 +2,6 @@ import sys
 import csv
 import random
 import os
-import threading
 
 from time import sleep
 from io import StringIO
@@ -204,7 +203,7 @@ def recalibrate(cal, points, dict, untouchable):
         
         # If nobody is able to do the duty on ALL dates that the outgoing is schedued for, return an error message
         if i == points[-1]:
-            sys.exit("don't liddis leh :(")
+            sys.exit("Please restart the program.")
 
 
 def duties(outgoing, cal):
@@ -269,3 +268,24 @@ def viable(date, unavailIncoming, incoming, cal, untouchable):
             return False
 
     return True
+
+
+def randomSwap(cal, untouchable, people, dict):
+
+    touchable = []
+    for date in cal.list():
+        if date[0] in untouchable:
+            continue
+        touchable.append(date[0])
+
+    random.shuffle(touchable)
+    random.shuffle(people)
+
+    for date in touchable:
+        for incoming in people:
+            if incoming == cal.list()[date - 1][2]:
+                continue
+            if not viable(date, dict[incoming]['unavail'], incoming, cal, untouchable):
+                continue
+            cal.list()[date - 1][2] = incoming
+            return
