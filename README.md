@@ -16,16 +16,17 @@ This program was created to automate the process of creating a duty list, under 
 
 ### Futher Assumptions:
 Doing duty rewards one with points, and the amount of points awarded depends on the type of day it is.
-#### As of now:
+
+### Points System:
 Monday - Thurday: 1 point  
 Friday: 1.5 points  
 Saturday, Sunday: 2 points
 
 ### Features: 
-(1) Extras - Punishments carried out on Saturday / Sunday. Clearing an extra means forfeiting the 2 points that usually come with doing duty on the day.
-(2) Extras-to-be-done - Individuals do not have to clear all their extras in one month. Each person can indicate how many extras they want to clear in a single month.
-(3) Points History - Points awarded from previous months are taken into account when planning. 
-(4) Points Equity - After finishing the schedue, the person with the most points and the person with the least points will only differ by MAXDIFF, a global variable in generate.py.
+(1) Extras - Punishments carried out on Saturday / Sunday. Clearing an extra means forfeiting the 2 points that usually come with doing duty on the day.  
+(2) Extras-to-be-done - Individuals do not have to clear all their extras in one month. Each person can indicate how many extras they want to clear in a single month.  
+(3) Points History - Points awarded from previous months are taken into account when planning.   
+(4) Points Equity - After finishing the schedue, the person with the most points and the person with the least points will only differ by MAXDIFF, a global variable in generate.py.  
 (5) Availability - Duty schedue will be planned around each person's availability. 
 
 ## Pending Issues:
