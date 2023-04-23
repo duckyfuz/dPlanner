@@ -289,3 +289,34 @@ def randomSwap(cal, untouchable, people, dict):
                 continue
             cal.list()[date - 1][2] = incoming
             return
+        
+
+def writeTo(output, calendar, people, points, mm, yy, dict):
+    
+    # Open a new file to write in
+    with open(output, 'w', newline='') as f:
+        writer = csv.writer(f)
+
+        # Write introductory lines
+        writer.writerow(["Hello all", ""])
+        writer.writerow(["These are the duties for the " + str(mm) + "th month of " + str(yy) + ":"])
+        writer.writerow([])
+
+        # Iterate through each day and add a new line for each day
+        for day in calendar.list():
+            writer.writerow([str(day[0]) + ". " + day[2]])
+        writer.writerow([])
+
+        # Add introcutory line
+        writer.writerow(["As of now", ""])
+
+        # Iterate through each person and add a new line for each person with outstanding extras
+        for person in people:
+            if dict[person]['leftovers'] == 0:
+                continue
+            writer.writerow([person + " still has " + str(dict[person]['leftovers']) + " outstanding extras to clear."])
+
+        writer.writerow([])
+        writer.writerow(["At the end of the month", ""])
+        for person in points:
+            writer.writerow([person[0] + ": " + str(person[1]) + "pts"])
