@@ -1,32 +1,5 @@
 import calendar
 
-class Person():
-
-    def __init__(self, name, unavail, points):
-        """Create a new person with name(str), unavail(list), points(int)"""
-        self.name = name
-        self.unavail = unavail
-        self.points = points
-
-        self.duties = []
-
-    def __hash__(self):
-        return hash(self.name, self.unavail, self.points)
-
-    def __eq__(self, other):
-        return (
-            (self.name == other.name) and
-            (self.unavail == other.unavail) and
-            (self.points == other.points)
-        )
-
-    def __str__(self):
-        return f"{self.name}{chr(10)}{self.unavail}{chr(10)}{self.points}"
-
-    def __repr__(self):
-        name = repr(self.name)
-        return f"Person({name}, {self.unavail}, {self.points})"
-
 
 class calendarPers():
 
@@ -60,14 +33,21 @@ class calendarPers():
 
     def viable(self, date, unavailIncoming, incoming, untouchable):
         """
-        Based on cal, check if incoming is doing duty on the day before/after date, and if incoming is unavail
+        Checks for the following:
+        1. Date is not in untouchable
+        2. Incoming is available on the date
+        3. Incoming is not schedued for two consecutive days
+        
+        Returns False if any of the above are violated.
+
+        Else, if all conditions are met, return True.
         """
 
-        # Check if the date is untouchable and if incoming is unavail on the date
+        # Check for (1) and (2)
         if date in untouchable or date in unavailIncoming:
             return False
         
-        # If the date is the first or last day of the month, only need to check one adjacent date (after or before respectively)
+        # For the first and last day of the month, only need to check one adjacent date (after or before respectively)
         if date < 1:
             if incoming == self.cal[date][2]:
                 return False

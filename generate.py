@@ -9,7 +9,7 @@ def main():
 
     # Check proper format
     if len(sys.argv) not in [4, 5]:
-        sys.exit("Usage: python generate.py year month [input].csv [output].")
+        sys.exit("Usage: python generate.py year month [input].csv [output].csv")
 
     # Parse command-line arguments
     yy,mm = int(sys.argv[1]),int(sys.argv[2])
@@ -54,42 +54,15 @@ def main():
                 randomSwap(calendar, untouchable, people, dict)
                 counter = 0
 
-        # Create new format for points
-        pointsP = []
-        for person in points:
-            pointsP.append(person[0] + ": " + str(person[1]) + "pts")
-        
-        print(pointsP)
-
         # If user did not specify an output, exit
         if output == None:
-            sys.exit()
+            for day in calendar.cal:
+                print(f"{day[0]}: {day[2]}")
+            sys.exit("Completed." + "\n" + "For a more convenient format, please specify an output. (eg. [output].csv)" + "\n" + "Usage: python generate.py year month [input].csv [output].csv")
 
-        # Open a new file to write in
-        with open(output, 'w', newline='') as f:
-            writer = csv.writer(f)
+        writeTo(output, calendar, people, points, mm, yy, dict)
 
-            # Write introductory lines
-            writer.writerow(["Hello all", ""])
-            writer.writerow(["These are the duties for the " + str(mm) + "th month of " + str(yy) + ":"])
-            writer.writerow([])
-
-            # Iterate through each day and add a new line for each day
-            for day in calendar.list():
-                writer.writerow([str(day[0]) + ". " + day[2]])
-            writer.writerow([])
-
-            # Add introcutory line
-            writer.writerow(["As of now", ""])
-
-            # Iterate through each person and add a new line for each person with outstanding extras
-            for person in people:
-                if dict[person]['leftovers'] == 0:
-                    continue
-                writer.writerow([person + " still has " + str(dict[person]['leftovers']) + " outstanding extras to clear."])
-
-
-        sys.exit()
+        sys.exit(f"Completed. Please view {output}")
 
 
 if __name__ == "__main__":
