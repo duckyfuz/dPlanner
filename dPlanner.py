@@ -30,17 +30,22 @@ def loadData(filename):
         # Add name to people[]
         people.append(row[0])
 
-        # Convert unavail dates to list of integers (Empty list if there are no unavail dates)
-        if row[3] == 'NULL':
-            unavailInt = []
+        # Clean up unavail dates
+        if row[3] != 'NULL':
 
-        else:
-
-            # Split row[3] into list values and convert the str values into int values
             unavail = list(row[3].split("/"))
-            unavailInt = []
+            unavailInt = set()
+
             for str in unavail:
-                unavailInt.append(int(str))
+                if not "-" in str:
+                    unavailInt.add(int(str))
+                    continue
+                start, end = str.split("-")
+                for i in range (int(start), int(end) + 1):
+                    unavailInt.add(i)
+                
+        else:
+            unavailInt = []
 
         clear = 0
         if int(row[2]) > 0:
