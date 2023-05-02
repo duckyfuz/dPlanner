@@ -5,6 +5,7 @@
 ██████╔╝██║░░░░░███████╗██║░░██║██║░╚███║██║░╚███║███████╗██║░░██║
 ╚═════╝░╚═╝░░░░░╚══════╝╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚══╝╚══════╝╚═╝░░╚═╝</p>
 
+### No loger being updated. Go to [dPlanner2.0](https://github.com/duckyfuz/dPlanner2.0) for the latest versions.
 ### Sample command: python3 generate.py 2023 5 data/may.csv data/output.csv
 ### REMINDER: The individual who did duty on the last day of the previous month is unavailable on the first day of the current month. Add this into the input CSV file.
 
